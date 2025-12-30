@@ -1,9 +1,7 @@
 package io.cloudtype.waitlist.model;
 
 import lombok.*;
-
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -17,18 +15,19 @@ public class Guest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "number", nullable = false)
-    private int num;
+    // 1. 부서명 (예: 개발팀)
+    @Column(nullable = false)
+    private String deptName;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    // 2. 예약자 성함 (예: 홍길동)
+    @Column(nullable = false)
+    private String bookerName;
 
-    @Column(name = "phone_num", nullable = false)
-    private String phoneNum;
+    // 3. 회의실 이름 (예: Creative Lab)
+    @Column(nullable = false)
+    private String roomName;
 
-    @Column(name = "entered")
-    private boolean entered = false;
-
-    @Column(name = "is_canceled")
-    private boolean isCanceled = false;
+    // 4. 예약 시간 (예: 14:00 ~ 16:00)
+    @Column(nullable = false)
+    private String timeInfo;
 }
