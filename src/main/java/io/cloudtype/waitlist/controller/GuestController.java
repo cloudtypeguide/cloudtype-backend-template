@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// 🔴 [중요] 프론트엔드(React)에서 보내는 요청을 허용하는 설정입니다. 절대 지우지 마세요.
-@CrossOrigin(origins = "*") 
+// 🟢 [필수] 프론트엔드(React)에서의 접속을 허용합니다.
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/guests")
 public class GuestController {
@@ -26,68 +26,35 @@ public class GuestController {
         return guestRepository.findAll();
     }
 
-    // 2. 예약 생성 (POST) - 🔴 [핵심 기능] 중복 검사 로직 추가됨
+    // 2. 예약 생성 (POST) - 🔴 [핵심] 중복 검사 및 디버깅 로그 추가
     @PostMapping
     public Guest createGuest(@RequestBody Guest guest) {
-        
-        // (1) 같은 방, 같은 날짜에 예약된 리스트를 가져옵니다.
-        // 주의: GuestRepository에 findByRoomNameAndDate 메소드가 있어야 합니다.
-        List<Guest> existingGuests = guestRepository.findByRoomNameAndDate(guest.getRoomName(), guest.getDate());
+        try {
+            // 서버 로그에 들어온 데이터 찍어보기 (디버깅용)
+            System.out.println("📥 예약 요청 수신: " + guest.getRoomName() + " / " + guest.getDate());
+            System.out.println("🕒 시간 확인: " + guest.getStartTime() + " ~ " + guest.getEndTime());
 
-        // (2) 가져온 예약들과 시간을 비교합니다.
-        for (Guest existing : existingGuests) {
-            // 로직: (새 예약 시작 < 기존 예약 종료) AND (새 예약 종료 > 기존 예약 시작)
-            // 이 조건이 참이면 시간이 겹치는 것입니다.
-            if (guest.getStartTime().compareTo(existing.getEndTime()) < 0 &&
-                guest.getEndTime().compareTo(existing.getStartTime()) > 0) {
-                
-                // 겹치면 에러를 발생시켜서 저장을 막습니다. (프론트엔드에서 alert창 뜸)
-                throw new RuntimeException("이미 예약된 시간입니다! (" + existing.getTimeInfo() + ")");
+            // (1) 해당 날짜, 해당 방의 기존 예약들을 가져옵니다.
+            List<Guest> existingGuests = guestRepository.findByRoomNameAndDate(guest.getRoomName(), guest.getDate());
+
+            // (2) 시간 중복 검사
+            for (Guest existing : existingGuests) {
+                // 로직: (새 예약 시작 < 기존 예약 종료) AND (새 예약 종료 > 기존 예약 시작)
+                if (guest.getStartTime().compareTo(existing.getEndTime()) < 0 &&
+                    guest.getEndTime().compareTo(existing.getStartTime()) > 0) {
+                    
+                    String errorMsg = "이미 예약된 시간입니다! (" + existing.getTimeInfo() + ")";
+                    System.out.println("❌ 예약 거절됨: " + errorMsg);
+                    throw new RuntimeException(errorMsg);
+                }
             }
-        }
 
-        // (3) 검사를 통과하면 저장합니다.
-        return guestRepository.save(guest);
-    }
+            // (3) 문제 없으면 저장
+            Guest savedGuest = guestRepository.save(guest);
+            System.out.println("✅ 예약 저장 완료: ID " + savedGuest.getId());
+            return savedGuest;
 
-    // 3. 특정 예약 조회
-    @GetMapping("/{id}")
-    public ResponseEntity<Guest> getGuestById(@PathVariable Long id) {
-        Guest guest = guestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Guest not exist with id :" + id));
-        return ResponseEntity.ok(guest);
-    }
-
-    // 4. 예약 수정 (PUT) - 🔴 [수정] 시간 정보 필드 업데이트 추가
-    @PutMapping("/{id}")
-    public ResponseEntity<Guest> updateGuest(@PathVariable Long id, @RequestBody Guest guestInfo) {
-        Guest guest = guestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Guest not exist with id :" + id));
-
-        // 기본 정보 수정
-        guest.setDeptName(guestInfo.getDeptName());
-        guest.setBookerName(guestInfo.getBookerName());
-        guest.setRoomName(guestInfo.getRoomName());
-        
-        // 🔴 [중요] 날짜와 시간 정보도 같이 수정해줘야 합니다.
-        guest.setDate(guestInfo.getDate());
-        guest.setStartTime(guestInfo.getStartTime());
-        guest.setEndTime(guestInfo.getEndTime());
-        guest.setTimeInfo(guestInfo.getTimeInfo());
-
-        Guest updatedGuest = guestRepository.save(guest);
-        return ResponseEntity.ok(updatedGuest);
-    }
-
-    // 5. 예약 삭제 (DELETE)
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Boolean>> deleteGuest(@PathVariable Long id) {
-        Guest guest = guestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Guest not exist with id :" + id));
-
-        guestRepository.delete(guest);
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("deleted", Boolean.TRUE);
-        return ResponseEntity.ok(response);
-    }
-}
+        } catch (Exception e) {
+            // 에러 발생 시 로그 출력
+            System.out.println("❌ 서버 에러 발생: " + e.getMessage());
+            e.printStackTrace
