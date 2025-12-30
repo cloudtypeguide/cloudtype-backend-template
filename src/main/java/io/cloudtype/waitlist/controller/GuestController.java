@@ -57,4 +57,50 @@ public class GuestController {
         } catch (Exception e) {
             // 에러 발생 시 로그 출력
             System.out.println("❌ 서버 에러 발생: " + e.getMessage());
-            e.printStackTrace
+            e.printStackTrace(); // 괄호가 꼭 있어야 합니다!
+            throw e; // 프론트엔드로 에러 던지기
+        }
+    }
+
+    // 3. 특정 예약 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<Guest> getGuestById(@PathVariable Long id) {
+        Guest guest = guestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Guest not exist with id :" + id));
+        return ResponseEntity.ok(guest);
+    }
+
+    // 4. 예약 수정 (PUT)
+    @PutMapping("/{id}")
+    public ResponseEntity<Guest> updateGuest(@PathVariable Long id, @RequestBody Guest guestInfo) {
+        Guest guest = guestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Guest not exist with id :" + id));
+
+        // 기본 정보 업데이트
+        guest.setDeptName(guestInfo.getDeptName());
+        guest.setBookerName(guestInfo.getBookerName());
+        guest.setRoomName(guestInfo.getRoomName());
+        
+        // 🔴 날짜 및 시간 정보 업데이트
+        guest.setDate(guestInfo.getDate());
+        guest.setStartTime(guestInfo.getStartTime());
+        guest.setEndTime(guestInfo.getEndTime());
+        guest.setTimeInfo(guestInfo.getTimeInfo());
+
+        Guest updatedGuest = guestRepository.save(guest);
+        return ResponseEntity.ok(updatedGuest);
+    }
+
+    // 5. 예약 삭제 (DELETE)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Boolean>> deleteGuest(@PathVariable Long id) {
+        Guest guest = guestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Guest not exist with id :" + id));
+
+        guestRepository.delete(guest);
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("deleted", Boolean.TRUE);
+        return ResponseEntity.ok(response);
+    }
+} 
+// 🚨 파일 끝에 이 중괄호 '}' 가 반드시 있어야 합니다!
