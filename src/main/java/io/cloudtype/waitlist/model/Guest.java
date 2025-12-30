@@ -15,19 +15,28 @@ public class Guest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    // 1. 부서명 (예: 개발팀)
     @Column(nullable = false)
     private String deptName;
 
-    // 2. 예약자 성함 (예: 홍길동)
     @Column(nullable = false)
     private String bookerName;
 
-    // 3. 회의실 이름 (예: Creative Lab)
     @Column(nullable = false)
     private String roomName;
 
-    // 4. 예약 시간 (예: 14:00 ~ 16:00)
+    // 🔴 [추가] 중복 검사용 데이터 (예: "2024-12-30")
+    @Column(nullable = false)
+    private String date;
+
+    // 🔴 [추가] 중복 검사용 데이터 (예: "09:30")
+    @Column(nullable = false)
+    private String startTime;
+
+    // 🔴 [추가] 중복 검사용 데이터 (예: "10:30")
+    @Column(nullable = false)
+    private String endTime;
+
+    // 화면에 보여주기용 예쁜 문자열 (예: "2024... (09:30 ~ 10:30)")
     @Column(nullable = false)
     private String timeInfo;
 }
