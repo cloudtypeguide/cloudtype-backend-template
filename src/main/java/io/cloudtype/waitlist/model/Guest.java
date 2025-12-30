@@ -24,19 +24,17 @@ public class Guest {
     @Column(nullable = false)
     private String roomName;
 
-    // 🔴 [추가] 중복 검사용 데이터 (예: "2024-12-30")
+    // 🔴 [핵심 수정] DB 예약어 'date' 충돌 방지! 
+    // 자바에서는 date라고 부르지만, DB에는 visit_date라고 저장합니다.
     @Column(name = "visit_date", nullable = false)
     private String date;
 
-    // 🔴 [추가] 중복 검사용 데이터 (예: "09:30")
     @Column(nullable = false)
     private String startTime;
 
-    // 🔴 [추가] 중복 검사용 데이터 (예: "10:30")
     @Column(nullable = false)
     private String endTime;
 
-    // 화면에 보여주기용 예쁜 문자열 (예: "2024... (09:30 ~ 10:30)")
     @Column(nullable = false)
     private String timeInfo;
 }
