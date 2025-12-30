@@ -25,7 +25,7 @@ public class Guest {
     private String roomName;
 
     // 🔴 [추가] 중복 검사용 데이터 (예: "2024-12-30")
-    @Column(nullable = false)
+    @Column(name = "visit_date", nullable = false)
     private String date;
 
     // 🔴 [추가] 중복 검사용 데이터 (예: "09:30")
